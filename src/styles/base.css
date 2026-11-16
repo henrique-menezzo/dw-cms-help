@@ -1,0 +1,223 @@
+/* DW+ CMS, measured from cms-dev.dailywire.com/lifecycle-management */
+:root {
+  --ink: #1f2027;
+  --ink-2: #3f3f3f;
+  --muted: #6a6a6a;
+  --label: #555555;
+  --red: #db3d3b;
+  --stone: #57534e;
+  --stone-dark: #292524;
+  --stone-line: #e7e5e4;
+  --page: #ececec;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+}
+body {
+  background: var(--page);
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #000;
+  -webkit-font-smoothing: antialiased;
+}
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+body:has([data-dragging]) {
+  user-select: none;
+  cursor: grabbing;
+}
+
+/* ---------- shell ---------- */
+.c-top {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+  height: 88px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-bottom: 1px solid var(--stone-line);
+}
+.c-top-logo {
+  display: block;
+  width: 192px;
+  height: 18px;
+  color: #000;
+}
+.c-top-logo span,
+.c-top-logo svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.c-user {
+  position: absolute;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+}
+.c-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #f0f0f0;
+  font-weight: 800;
+  font-size: 20px;
+}
+.c-user-chev {
+  margin-left: 4px;
+}
+
+.c-side {
+  position: fixed;
+  top: 88px;
+  left: 0;
+  bottom: 0;
+  width: 255px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #fff;
+  border-right: 1px solid var(--stone-line);
+}
+.c-side-list {
+  padding-top: 12px;
+}
+.c-side-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--stone);
+  text-align: left;
+  cursor: pointer;
+}
+.c-side-row:hover {
+  background: #fafaf9;
+}
+.c-side-row.is-open {
+  background: #f5f5f4;
+  border-left: 4px solid #44403c;
+  padding-left: 12px;
+  color: var(--stone-dark);
+}
+.c-side-ico {
+  flex-shrink: 0;
+}
+.c-side-ico.is-star {
+  color: #eab308;
+}
+.c-side-chev {
+  margin-left: auto;
+}
+.c-side hr {
+  border: 0;
+  border-top: 1px solid var(--stone-line);
+  margin: 8px 16px;
+}
+.c-side-sub {
+  display: block;
+  padding: 6px 16px 6px 48px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--stone-dark);
+}
+.c-side-collapse {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #78716c;
+  border-top: 1px solid var(--stone-line);
+}
+
+.c-main {
+  margin-left: 255px;
+  padding-top: 88px;
+  min-height: 100vh;
+}
+
+/* ---------- buttons ---------- */
+.c-round-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+  color: var(--stone);
+}
+.c-round-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.c-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.c-btn.is-dark {
+  background: #474747;
+  color: #fff;
+}
+.c-btn.is-dark:hover {
+  background: #363636;
+}
+.c-btn.is-light {
+  background: #dcdcdc;
+  color: var(--ink);
+}
+.c-btn.is-light:hover {
+  background: #d0d0d0;
+}
+.c-btn.is-plain {
+  color: var(--ink-2);
+}
+.c-btn.is-plain:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
