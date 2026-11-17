@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { faArrowRight, faCheck, faLink } from '@fortawesome/free-solid-svg-icons';
 import { Fa } from '../components/Icon';
 import { PageBar } from '../components/Shell';
 import { fmtDate, guideById, guideFeature } from '../data/guides';
 import { featurePath, groupById } from '../data/nav';
 import { go, type Route } from '../lib/router';
-import { GuideArticle, StillStuck, readMinutes } from '../help/Article';
+import { GuideArticle, StillStuck, readMinutes, useDone } from '../help/Article';
 import { SampleNote } from '../help/GuideBlocks';
 import { DocsNav } from './DocsNav';
 
@@ -16,31 +16,15 @@ export function GuidePage({ route, id }: { route: Route; id: string }) {
   const [active, setActive] = useState<string>('top');
   const [copied, setCopied] = useState(false);
 
-  // steps you read past get a check. Jumps from the list or a link don't count: you skipped those.
-  const [read, setRead] = useState<Set<string>>(new Set());
-  const jumping = useRef(false);
-  const prev = useRef('top');
+  // the dots follow what the reader checked off themselves (Mark as done at the end of each step)
+  const doneIds = useDone(id);
   const keys = guide ? ['top', ...guide.sections.map((s) => s.id), ...(guide.outro ? ['done'] : [])] : [];
 
-  const holdWhileJumping = () => {
-    jumping.current = true;
-    const end = () => {
-      jumping.current = false;
-      clearTimeout(t);
-      removeEventListener('scrollend', end);
-    };
-    const t = setTimeout(end, 1200);
-    addEventListener('scrollend', end, { once: true });
-  };
-
   useEffect(() => {
-    setRead(new Set());
-    prev.current = 'top';
     if (!target) {
       window.scrollTo({ top: 0 });
       return;
     }
-    holdWhileJumping();
     const t = setTimeout(() => document.getElementById('s-' + target)?.scrollIntoView({ block: 'start' }), 60);
     return () => clearTimeout(t);
   }, [id, target]);
@@ -54,17 +38,6 @@ export function GuidePage({ route, id }: { route: Route; id: string }) {
       // the last part is too short to reach the reading line: at the bottom of the page, you're on it
       const atEnd = innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
       if (atEnd && keys.length) cur = keys[keys.length - 1];
-      const from = keys.indexOf(prev.current);
-      const to = keys.indexOf(cur);
-      if (!jumping.current && to > from && from >= 0) {
-        setRead((r) => {
-          const n = new Set(r);
-          keys.slice(from, to).forEach((k) => n.add(k));
-          if (cur === 'done') n.add('done');
-          return n;
-        });
-      }
-      prev.current = cur;
       setActive(cur);
     };
     on();
@@ -79,7 +52,6 @@ export function GuidePage({ route, id }: { route: Route; id: string }) {
   const f = guideFeature(guide);
   const g = groupById(f.group)!;
   const jumpTo = (key: string) => {
-    holdWhileJumping();
     if (key === 'top') window.scrollTo({ top: 0, behavior: 'smooth' });
     else document.getElementById('s-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -136,7 +108,7 @@ export function GuidePage({ route, id }: { route: Route; id: string }) {
             <ul>
               {keys.map((k) => {
                 const on = active === k;
-                const done = read.has(k) && (!on || k === 'done');
+                const done = k === 'done' ? guide.sections.every((s) => doneIds.includes(s.id)) : doneIds.includes(k);
                 return (
                   <li key={k}>
                     <button className={(on ? 'is-on' : '') + (done ? ' is-read' : '')} aria-current={on ? 'step' : undefined} onClick={() => jumpTo(k)}>
@@ -145,7 +117,7 @@ export function GuidePage({ route, id }: { route: Route; id: string }) {
                       </span>
                       <span className="dt-l">
                         {labels[k]}
-                        {done && <span className="sr-only"> (read)</span>}
+                        {done && <span className="sr-only"> (done)</span>}
                       </span>
                     </button>
                   </li>
