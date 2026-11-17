@@ -5,7 +5,7 @@ import { PageBar } from '../components/Shell';
 import { fmtDate, guideById, guideFeature } from '../data/guides';
 import { featurePath, groupById } from '../data/nav';
 import { go, type Route } from '../lib/router';
-import { GuideArticle, StillStuck, readMinutes, useDone } from '../help/Article';
+import { GuideArticle, StillStuck, readMinutes } from '../help/Article';
 import { SampleNote } from '../help/GuideBlocks';
 import { DocsNav } from './DocsNav';
 
@@ -16,8 +16,7 @@ export function GuidePage({ route, id }: { route: Route; id: string }) {
   const [active, setActive] = useState<string>('top');
   const [copied, setCopied] = useState(false);
 
-  // the dots follow what the reader checked off themselves (Mark as done at the end of each step)
-  const doneIds = useDone(id);
+  // one dot per part of the guide; the black one is where you are
   const keys = guide ? ['top', ...guide.sections.map((s) => s.id), ...(guide.outro ? ['done'] : [])] : [];
 
   useEffect(() => {
@@ -108,17 +107,11 @@ export function GuidePage({ route, id }: { route: Route; id: string }) {
             <ul>
               {keys.map((k) => {
                 const on = active === k;
-                const done = k === 'done' ? guide.sections.every((s) => doneIds.includes(s.id)) : doneIds.includes(k);
                 return (
                   <li key={k}>
-                    <button className={(on ? 'is-on' : '') + (done ? ' is-read' : '')} aria-current={on ? 'step' : undefined} onClick={() => jumpTo(k)}>
-                      <span className="dt-dot" aria-hidden="true">
-                        <Fa icon={faCheck} size={7} />
-                      </span>
-                      <span className="dt-l">
-                        {labels[k]}
-                        {done && <span className="sr-only"> (done)</span>}
-                      </span>
+                    <button className={on ? 'is-on' : ''} aria-current={on ? 'step' : undefined} onClick={() => jumpTo(k)}>
+                      <span className="dt-dot" aria-hidden="true" />
+                      <span className="dt-l">{labels[k]}</span>
                     </button>
                   </li>
                 );

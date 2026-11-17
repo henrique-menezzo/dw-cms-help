@@ -23,20 +23,6 @@ export function useDone(guide: string) {
   return useStore((s) => s.done[guide]) ?? [];
 }
 
-/** The reader checks a step off themselves, and can take it back. Saved in this browser. */
-export function DoneToggle({ guide, section }: { guide: string; section: string }) {
-  const done = useDone(guide).includes(section);
-  const toggle = useStore((s) => s.toggleDone);
-  return (
-    <button className={'step-done' + (done ? ' is-done' : '')} onClick={() => toggle(guide, section)} aria-pressed={done}>
-      <span className="step-done-tick" aria-hidden="true">
-        <Fa icon={faCheck} size={9} />
-      </span>
-      {done ? 'Done' : 'Mark as done'}
-    </button>
-  );
-}
-
 export function Progress({ guide }: { guide: Guide }) {
   const done = useDone(guide.id).filter((id) => guide.sections.some((s) => s.id === id)).length;
   const total = guide.sections.length;
@@ -126,10 +112,11 @@ export function GuideArticle({ guide, idPrefix, here }: { guide: Guide; variant?
             </h2>
           </header>
           <Blocks blocks={s.blocks} anchor={`${idPrefix}-${s.id}`} secKey={s.id} />
-          <div className="ga-acts">
-            {s.where && <WhereButton guide={guide} section={s} variant="text" />}
-            <DoneToggle guide={guide.id} section={s.id} />
-          </div>
+          {s.where && (
+            <div className="ga-acts">
+              <WhereButton guide={guide} section={s} variant="text" />
+            </div>
+          )}
         </section>
       ))}
       {guide.outro && (

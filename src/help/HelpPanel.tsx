@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   faArrowUpRightFromSquare,
-  faCheck,
   faMinus,
   faPlus,
   faChevronLeft,
@@ -16,7 +15,7 @@ import { guideById, guideFeature, search, type Guide, type Hit } from '../data/g
 import { GROUPS, groupById, type Group } from '../data/nav';
 import { go } from '../lib/router';
 import { useStore } from '../store';
-import { DoneToggle, Feedback, StillStuck, TopicIcon, readMinutes, useDone } from './Article';
+import { Feedback, StillStuck, TopicIcon, readMinutes } from './Article';
 import { Blocks, SampleNote, WhereButton, sectionFrames } from './GuideBlocks';
 import { Results, SearchBox } from './Search';
 import { Walkthrough } from './Walkthrough';
@@ -186,7 +185,6 @@ function PanelGuide({ guide, scroller }: { guide: Guide; scroller: React.RefObje
   const f = guideFeature(guide);
   const g = groupById(f.group)!;
   const here = ctx?.guide === guide.id ? ctx.section : null;
-  const doneIds = useDone(guide.id);
 
   // keep the guide's title in view when the open step is near the top; otherwise bring the step up
   useEffect(() => {
@@ -223,13 +221,7 @@ function PanelGuide({ guide, scroller }: { guide: Guide; scroller: React.RefObje
               return (
                 <li key={s.id} data-acc={s.id} className={'acc-i' + (open ? ' is-open' : '')}>
                   <button className="acc-row" onClick={() => setSection(open ? null : s.id)} aria-expanded={open}>
-                    {doneIds.includes(s.id) ? (
-                      <span className="acc-tick" aria-label="Done">
-                        <Fa icon={faCheck} size={9} />
-                      </span>
-                    ) : (
-                      <span className="acc-n">{i + 1}</span>
-                    )}
+                    <span className="acc-n">{i + 1}</span>
                     <span className="acc-t">
                       {s.title}
                       {here === s.id && <span className="acc-here">You’re on this screen</span>}
@@ -240,10 +232,11 @@ function PanelGuide({ guide, scroller }: { guide: Guide; scroller: React.RefObje
                     <div className="acc-body">
                       {frames.length > 0 && <Walkthrough key={s.id} frames={frames} size="sm" label="Watch" />}
                       <Blocks blocks={s.blocks} compact shotsAs="none" />
-                      <div className="acc-acts">
-                        {s.where && <WhereButton guide={guide} section={s} variant="text" />}
-                        <DoneToggle guide={guide.id} section={s.id} />
-                      </div>
+                      {s.where && (
+                        <div className="acc-acts">
+                          <WhereButton guide={guide} section={s} variant="text" />
+                        </div>
+                      )}
                     </div>
                   )}
                 </li>

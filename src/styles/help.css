@@ -4740,7 +4740,7 @@
   white-space: nowrap;
 }
 
-/* on this page: one dot per step. Gray = ahead, black = you are here, green check = you read it */
+/* on this page: one dot per part of the guide. Black = you are here, gray = the rest */
 .dt > ul > li > button {
   align-items: flex-start;
   gap: 10px;
@@ -4764,13 +4764,6 @@
   background: #d3d0cb;
   transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
 }
-.dt-dot svg {
-  position: relative;
-  color: #fff;
-  opacity: 0;
-  transform: scale(0.4);
-  transition: opacity 0.18s ease, transform 0.26s cubic-bezier(0.3, 1.5, 0.5, 1);
-}
 .dt button:hover .dt-dot::before {
   background: #aaa6a0;
 }
@@ -4778,15 +4771,6 @@
   width: 8px;
   height: 8px;
   background: var(--d-ink);
-}
-.dt button.is-read .dt-dot::before {
-  width: 14px;
-  height: 14px;
-  background: #3d9b52;
-}
-.dt button.is-read .dt-dot svg {
-  opacity: 1;
-  transform: none;
 }
 
 /* help entry point: just the question mark, black. A soft tint on hover and while the panel is open */
@@ -4813,74 +4797,4 @@
 .cm-help.is-on {
   background: rgba(31, 32, 39, 0.08);
   color: #1f2027;
-}
-
-/* ================= Mark as done: the reader checks a step off, and can take it back ================= */
-.ga-acts,
-.da .ga-acts,
-.acc-acts {
-  gap: 8px;
-}
-.step-done {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  height: 36px;
-  padding: 0 16px 0 12px;
-  border-radius: 999px;
-  background: var(--tint);
-  font-size: 14px;
-  line-height: 1;
-  font-weight: 600;
-  color: var(--d-ink);
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-.step-done:hover {
-  background: var(--tint-2);
-}
-.step-done-tick {
-  width: 16px;
-  height: 16px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #fff;
-  color: #fff;
-  transition: background-color 0.18s ease;
-}
-.step-done-tick svg {
-  opacity: 0;
-  transform: scale(0.4);
-  transition: opacity 0.18s ease, transform 0.26s cubic-bezier(0.3, 1.5, 0.5, 1);
-}
-.step-done.is-done {
-  background: #e6f2e8;
-  color: #2f6b3c;
-}
-.step-done.is-done:hover {
-  background: #d8ebdc;
-}
-.step-done.is-done .step-done-tick {
-  background: #3d9b52;
-}
-.step-done.is-done .step-done-tick svg {
-  opacity: 1;
-  transform: none;
-}
-.acc-acts .step-done {
-  height: 34px;
-  font-size: 13.5px;
-}
-
-/* side panel: a checked step trades its number for the same green check as the dots */
-.acc-tick {
-  flex: 0 0 18px;
-  width: 18px;
-  height: 18px;
-  margin: 1.5px 4px 0 0;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #3d9b52;
-  color: #fff;
 }
