@@ -4789,7 +4789,7 @@
   transform: none;
 }
 
-/* help entry point: just the question mark, gray. A soft tint on hover and while the panel is open */
+/* help entry point: just the question mark, black. A soft tint on hover and while the panel is open */
 .h-howto,
 .cm-help {
   width: 40px;
@@ -4801,7 +4801,7 @@
   border-radius: 50%;
   background: transparent;
   box-shadow: none;
-  color: #8a8580;
+  color: #1f2027;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 .h-howto:hover,
