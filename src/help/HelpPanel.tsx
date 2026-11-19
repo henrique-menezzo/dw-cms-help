@@ -15,6 +15,7 @@ import { guideById, guideFeature, search, type Guide, type Hit } from '../data/g
 import { GROUPS, groupById, type Group } from '../data/nav';
 import { go } from '../lib/router';
 import { useStore } from '../store';
+import { useAuthored, useAuthoredVersion } from '../data/authored';
 import { Feedback, StillStuck, TopicIcon, readMinutes } from './Article';
 import { Blocks, SampleNote, WhereButton, sectionFrames } from './GuideBlocks';
 import { Results, SearchBox } from './Search';
@@ -25,6 +26,7 @@ import { Walkthrough } from './Walkthrough';
  * Home (search, this page, quick answers, topics) → topic → guide, with a back arrow, like Slack and Xero.
  */
 export function HelpPanel() {
+  useAuthoredVersion();
   const help = useStore((s) => s.help);
   const close = useStore((s) => s.closeHelp);
   const home = useStore((s) => s.helpHome);
@@ -185,6 +187,7 @@ function PanelGuide({ guide, scroller }: { guide: Guide; scroller: React.RefObje
   const f = guideFeature(guide);
   const g = groupById(f.group)!;
   const here = ctx?.guide === guide.id ? ctx.section : null;
+  const hasDraft = useAuthored((s) => !!s.drafts[guide.id]);
 
   // keep the guide's title in view when the open step is near the top; otherwise bring the step up
   useEffect(() => {
@@ -211,7 +214,11 @@ function PanelGuide({ guide, scroller }: { guide: Guide; scroller: React.RefObje
         {!guide.sample && <p className="pg-meta">{guide.sections.length} steps · {readMinutes(guide)} min read</p>}
       </div>
       {guide.sample ? (
-        <SampleNote guide={guide} onExample={() => openHelp('movies', null)} />
+        <SampleNote guide={guide} onExample={() => openHelp('movies', null)}>
+          <button className="g-sample-write" onClick={() => go(hasDraft ? `/help/write/${guide.id}` : `/help?new=1&page=${guide.id}`)}>
+            {hasDraft ? 'Keep writing this guide' : 'Write this guide'}
+          </button>
+        </SampleNote>
       ) : (
         <>
           <ol className="acc">

@@ -7,6 +7,8 @@ import { CommandPalette } from './help/CommandPalette';
 import { useRoute } from './lib/router';
 import { Feature } from './pages/Feature';
 import { GuidePage } from './pages/Guide';
+import { GuideEditor } from './pages/GuideEditor';
+import { PreviewBar, SpotPicker } from './help/AuthorOverlays';
 import { Library } from './pages/Library';
 import { MovieDetail } from './pages/MovieDetail';
 import { Movies } from './pages/Movies';
@@ -64,7 +66,7 @@ export function App() {
   }, []);
 
   let page;
-  if (inHelp) page = b ? <GuidePage route={route} id={b} /> : <Library route={route} />;
+  if (inHelp) page = b === 'write' && c ? <GuideEditor route={route} id={c} /> : b ? <GuidePage route={route} id={b} /> : <Library route={route} />;
   else if (a === 'content' && b === 'movies') page = c ? <MovieDetail route={route} id={c} /> : <Movies route={route} />;
   else {
     const g = groupById(a);
@@ -81,6 +83,8 @@ export function App() {
       <Spotlight />
       <Lightbox />
       <CommandPalette />
+      <SpotPicker />
+      <PreviewBar />
     </>
   );
 }

@@ -15,13 +15,15 @@ export function Feature({ feature, group }: { feature: F; group: Group }) {
       <section className="ft">
         <div className="ft-head">
           <h1>{feature.name}</h1>
-          <button className="mv-add is-sm">Add New</button>
+          <button className="mv-add is-sm" data-help="feature-add">
+            Add New
+          </button>
         </div>
-        <label className="mv-search">
+        <label className="mv-search" data-help="feature-search">
           <Fa icon={faMagnifyingGlass} size={18} />
           <input placeholder={`Search ${feature.name}`} />
         </label>
-        <div className="ft-table" aria-hidden>
+        <div className="ft-table" aria-hidden data-help="feature-list">
           <div className="ft-row is-head">
             <span>Name</span>
             <span>Status</span>

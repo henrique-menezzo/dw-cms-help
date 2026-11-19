@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { faArrowRight, faCheck, faLink } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRight, faCheck, faLink, faPen } from '@fortawesome/free-solid-svg-icons';
+import { useAuthored, useAuthoredVersion } from '../data/authored';
 import { Fa } from '../components/Icon';
 import { PageBar } from '../components/Shell';
 import { fmtDate, guideById, guideFeature } from '../data/guides';
@@ -11,7 +12,11 @@ import { DocsNav } from './DocsNav';
 
 /** One guide, laid out like a Linear Docs article: docs nav, a 650px reading column, "On this page". */
 export function GuidePage({ route, id }: { route: Route; id: string }) {
+  useAuthoredVersion();
   const guide = guideById(id);
+  const hasDraft = useAuthored((s) => !!s.drafts[id]);
+  const previewing = useAuthored((s) => s.preview === id);
+  const justPublished = route.q.get('published') === '1';
   const target = route.parts[2];
   const [active, setActive] = useState<string>('top');
   const [copied, setCopied] = useState(false);
@@ -60,6 +65,12 @@ export function GuidePage({ route, id }: { route: Route; id: string }) {
   return (
     <div className="c-page">
       <PageBar crumbs={[{ label: 'Help Library', to: '/help' }, { label: g.name, to: `/help?cat=${g.id}` }, { label: f.name }]} howto={false}>
+        {!guide.sample && !previewing && (
+          <button className="pb-copy" onClick={() => go(`/help/write/${id}`)}>
+            <Fa icon={faPen} size={11} />
+            {hasDraft ? 'Edit draft' : 'Edit'}
+          </button>
+        )}
         <button
           className="pb-copy"
           onClick={() => {
@@ -93,13 +104,19 @@ export function GuidePage({ route, id }: { route: Route; id: string }) {
           </p>
           {guide.sample ? (
             <>
-              <SampleNote guide={guide} onExample={() => go('/help/movies')} />
+              <SampleNote guide={guide} onExample={() => go('/help/movies')}>
+                <button className="g-sample-write" onClick={() => go(hasDraft ? `/help/write/${id}` : `/help?new=1&page=${id}`)}>
+                  <Fa icon={faPen} size={11} />
+                  {hasDraft ? 'Keep writing this guide' : 'Write this guide'}
+                </button>
+              </SampleNote>
               <StillStuck />
             </>
           ) : (
             <GuideArticle guide={guide} variant="page" idPrefix="s" />
           )}
         </article>
+        {justPublished && <Toast>Live now. The question mark on {f.name} opens this guide.</Toast>}
 
         {!guide.sample && (
           <aside className="dt" aria-label="On this page">
@@ -122,4 +139,18 @@ export function GuidePage({ route, id }: { route: Route; id: string }) {
       </div>
     </div>
   );
+}
+
+function Toast({ children }: { children: React.ReactNode }) {
+  const [on, setOn] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setOn(false), 4200);
+    return () => clearTimeout(t);
+  }, []);
+  return on ? (
+    <p className="ge-toast" role="status">
+      <Fa icon={faCheck} size={11} />
+      {children}
+    </p>
+  ) : null;
 }

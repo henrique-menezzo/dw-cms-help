@@ -8,6 +8,7 @@ import '@fontsource/libre-franklin/800.css';
 import './styles/base.css';
 import './styles/cms.css';
 import './styles/help.css';
+import './styles/editor.css';
 import { App } from './App';
 
 createRoot(document.getElementById('root')!).render(

@@ -1,0 +1,1060 @@
+/* ================= Writing a guide =================
+   The document column is the guide itself (same 650 column, same type), so editing never looks like a form.
+   Editable text shows itself with a soft tint on hover and focus, never a box or an outline. */
+
+.docs.is-editor {
+  grid-template-columns: 220px minmax(0, 650px) 248px;
+  gap: 48px;
+}
+@media (max-width: 1360px) {
+  .docs.is-editor {
+    grid-template-columns: 200px minmax(0, 650px);
+  }
+  .ge-rail {
+    display: none;
+  }
+}
+@media (max-width: 1080px) {
+  .docs.is-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ge-outline {
+    display: none;
+  }
+}
+
+/* ---------- page bar ---------- */
+.ge-saved {
+  margin-right: 4px;
+  font-size: 13px;
+  color: var(--d-muted);
+}
+.ge-publish {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #1f2027;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  transition: background-color 0.15s ease;
+}
+.ge-publish:hover {
+  background: #000;
+}
+.ge-publish:disabled {
+  background: #cfcdc9;
+  cursor: not-allowed;
+}
+.ge-publish.is-new {
+  padding: 0 16px 0 13px;
+}
+
+/* ---------- outline ---------- */
+.ge-outline {
+  position: sticky;
+  top: 112px;
+  max-height: calc(100vh - 136px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ge-outline .dt-t {
+  margin: 0 0 8px 10px;
+}
+.ge-o {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 6px 10px 6px 6px;
+  border-radius: 6px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: #6b6a70;
+}
+.ge-o:hover {
+  background: #fafaf9;
+  color: var(--d-ink);
+}
+.ge-o.is-on {
+  background: var(--tint);
+  color: var(--d-ink);
+  font-weight: 600;
+}
+.ge-o > .ge-o-t:first-child {
+  padding-left: 16px;
+}
+.ge-o-t {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ge-o-t.is-empty {
+  color: #aaa6a0;
+}
+.ge-o-grip {
+  flex: 0 0 10px;
+  color: #b9b5af;
+  opacity: 0;
+  cursor: grab;
+  transition: opacity 0.15s ease;
+}
+.ge-o:hover .ge-o-grip {
+  opacity: 1;
+}
+.ge-o.is-drag {
+  opacity: 0.4;
+}
+.ge-o.is-over {
+  background: var(--tint-2);
+}
+.ge-o.is-add {
+  margin-top: 6px;
+  padding-left: 10px;
+  gap: 8px;
+  color: var(--d-muted);
+}
+
+/* ---------- text that edits in place ---------- */
+.ge-text {
+  display: block;
+  width: calc(100% + 16px);
+  margin: -4px -8px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  resize: none;
+  overflow: hidden;
+  outline: 0;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  transition: background-color 0.15s ease;
+}
+.ge-text::placeholder {
+  color: #b3afa9;
+  opacity: 1;
+}
+.ge-rich {
+  cursor: text;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ge-rich:empty::before {
+  content: attr(data-placeholder);
+  color: #b3afa9;
+  pointer-events: none;
+}
+.ge-rich b {
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.ge-text:hover {
+  background: #f7f7f6;
+}
+.ge-text:focus {
+  background: #f3f3f2;
+}
+
+.ge-title {
+  font-size: 32px;
+  line-height: 38px;
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  color: var(--d-ink);
+}
+.ge-lead {
+  margin-top: 12px;
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--d-body);
+}
+.ge-doc .da-meta {
+  margin-top: 14px;
+}
+
+/* the walkthrough builds itself from the steps' screenshots */
+.ge-walk {
+  margin-top: 32px;
+}
+.ge-note {
+  margin-top: 10px;
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--d-muted);
+}
+.ge-walk-empty {
+  margin-top: 32px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 22px;
+  border-radius: 12px;
+  background: var(--d-card);
+  color: var(--d-muted);
+}
+.ge-walk-empty svg {
+  margin-top: 2px;
+}
+.ge-walk-empty b {
+  display: block;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.ge-walk-empty p {
+  margin-top: 2px;
+  font-size: 13.5px;
+  line-height: 20px;
+}
+
+/* ---------- a step ---------- */
+.ge-step {
+  margin-top: 88px;
+  scroll-margin-top: 120px;
+}
+.ge-step-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.ge-step-head h2 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--d-ink);
+}
+.ge-step-n {
+  flex: none;
+}
+.ge-step-t {
+  flex: 1;
+  min-width: 0;
+}
+.ge-tools {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 3px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.ge-step-head:hover .ge-tools,
+.ge-step-head:focus-within .ge-tools,
+.ge-tools:has(.ge-confirm) {
+  opacity: 1;
+}
+.ge-ib {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--d-muted);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.ge-ib:hover {
+  background: var(--tint);
+  color: var(--d-ink);
+}
+.ge-ib:disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+.ge-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--d-body);
+}
+.ge-confirm button {
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 999px;
+  background: var(--tint);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.ge-confirm button:hover {
+  background: var(--tint-2);
+}
+.ge-confirm .is-danger {
+  background: #fbeceb;
+  color: #b8322e;
+}
+.ge-confirm .is-danger:hover {
+  background: #f7dddb;
+}
+
+/* ---------- blocks: same rhythm as the published guide ---------- */
+.da.ge-doc .ge-blocks {
+  margin-top: 16px;
+}
+.da.ge-doc .ge-blocks > * {
+  margin-top: 0;
+}
+.da.ge-doc .ge-blocks > .ge-b + .ge-b {
+  margin-top: 16px;
+}
+.da.ge-doc .ge-blocks > .ge-b + .ge-b.is-steps,
+.da.ge-doc .ge-blocks > .ge-b + .ge-b.is-list,
+.da.ge-doc .ge-blocks > .ge-b + .ge-b.is-defs {
+  margin-top: 10px;
+}
+.da.ge-doc .ge-blocks > .ge-b + .ge-b.is-callout,
+.da.ge-doc .ge-blocks > .ge-b.is-callout + .ge-b,
+.da.ge-doc .ge-blocks > .ge-b + .ge-b.is-shots,
+.da.ge-doc .ge-blocks > .ge-b + .ge-b.is-video,
+.da.ge-doc .ge-blocks > .ge-b + .ge-b.is-more {
+  margin-top: 24px;
+}
+.da.ge-doc .ge-blocks > .ge-b.is-shots + .ge-b,
+.da.ge-doc .ge-blocks > .ge-b.is-video + .ge-b {
+  margin-top: 32px;
+}
+.da.ge-doc .ge-blocks > .ge-b + .ge-b.is-h {
+  margin-top: 40px;
+}
+.da.ge-doc .ge-blocks > .ge-b.is-h + .ge-b {
+  margin-top: 8px;
+}
+.da.ge-doc .ge-blocks > .ge-addb {
+  margin-top: 14px;
+}
+
+.ge-b {
+  position: relative;
+}
+.ge-b-tools {
+  position: absolute;
+  top: -14px;
+  right: -6px;
+  z-index: 5;
+  display: flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1), 0 4px 14px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.ge-b:hover > .ge-b-tools,
+.ge-b:focus-within > .ge-b-tools {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ge-p {
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--d-body);
+}
+.ge-h {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.da.ge-doc .ge-items {
+  margin: 0;
+}
+.ge-items li + li {
+  margin-top: 6px;
+}
+.ge-items .ge-text {
+  font-size: 15px;
+  line-height: 24px;
+}
+.ge-callout {
+  align-items: flex-start;
+}
+.ge-callout .ge-text:hover,
+.ge-callout .ge-text:focus {
+  background: rgba(255, 255, 255, 0.55);
+}
+.ge-callout-l {
+  flex: none;
+}
+.ge-callout-t {
+  flex: 1;
+}
+.ge-defs > div {
+  display: grid;
+  grid-template-columns: 148px minmax(0, 1fr) 26px;
+  align-items: start;
+  gap: 16px;
+}
+.ge-defs > div + div {
+  margin-top: 10px;
+}
+.ge-def-k {
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.ge-defs .ge-ib {
+  opacity: 0;
+}
+.ge-defs > div:hover .ge-ib {
+  opacity: 1;
+}
+.ge-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.ge-link:hover {
+  background: var(--tint);
+}
+.ge-link.is-add {
+  margin: 12px 0 0 -10px;
+  color: var(--d-muted);
+}
+
+/* add a block */
+.ge-addb {
+  position: relative;
+}
+.ge-addb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  margin-left: -10px;
+  padding: 0 12px 0 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--d-muted);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.ge-addb-btn:hover,
+.ge-addb.is-open .ge-addb-btn {
+  background: var(--tint);
+  color: var(--d-ink);
+}
+.ge-menu {
+  position: absolute;
+  top: 38px;
+  left: -10px;
+  z-index: 30;
+  width: 520px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 12px 36px rgba(0, 0, 0, 0.14);
+  animation: fade 0.15s ease;
+}
+.ge-menu-i {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-align: left;
+}
+.ge-menu-i:hover,
+.ge-menu-i:focus-visible {
+  background: var(--tint);
+  outline: 0;
+}
+.ge-menu-ico {
+  flex: 0 0 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--tint);
+  color: var(--d-ink);
+}
+.ge-menu-i:hover .ge-menu-ico {
+  background: #fff;
+}
+.ge-menu-t {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ge-menu-t b {
+  font-size: 13.5px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.ge-menu-t span {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--d-muted);
+}
+
+/* screenshots and video */
+.ge-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 30px 20px;
+  border-radius: 12px;
+  background: var(--d-card);
+  text-align: center;
+  color: var(--d-muted);
+  cursor: pointer;
+  outline: 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.ge-drop svg {
+  margin-bottom: 6px;
+}
+.ge-drop b {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.ge-drop span {
+  font-size: 12.5px;
+  line-height: 18px;
+}
+.ge-drop.is-compact {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 12px 16px;
+}
+.ge-drop.is-compact svg {
+  margin: 0;
+}
+.ge-drop.is-compact b {
+  font-size: 13.5px;
+}
+.ge-drop:hover,
+.ge-drop:focus-visible,
+.ge-drop.is-over {
+  background: #efeeec;
+  color: var(--d-body);
+}
+.ge-shots {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.ge-shot {
+  margin: 0;
+}
+.ge-shot-img {
+  position: relative;
+  padding: 10px;
+  border-radius: 14px;
+  background: var(--d-card);
+}
+.ge-shot-img img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+.ge-shot-img .ge-ib {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #fff;
+  color: var(--d-ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+}
+.ge-shot-img:hover .ge-ib {
+  opacity: 1;
+}
+.ge-cap {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--d-muted);
+}
+.g-video {
+  margin: 0;
+}
+.g-video video {
+  display: block;
+  width: 100%;
+  border-radius: 12px;
+  background: #111;
+}
+.ge-video figcaption {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--d-muted);
+}
+.da .g-blocks > * + .g-video {
+  margin-top: var(--sp-block);
+}
+.da .g-blocks > .g-video + * {
+  margin-top: var(--sp-after-media);
+}
+
+/* extra detail, and the one block that isn't written by hand */
+.ge-more {
+  padding: 14px 16px 12px;
+  border-radius: 12px;
+  background: var(--d-card);
+}
+.ge-more-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.ge-more-head svg {
+  flex: none;
+  color: var(--d-muted);
+}
+.da.ge-doc .ge-more .ge-blocks {
+  margin-top: 10px;
+  padding-left: 20px;
+}
+.ge-more .ge-text:hover,
+.ge-more .ge-text:focus {
+  background: #fff;
+}
+.ge-locked {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--d-card);
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--d-muted);
+}
+.ge-locked svg {
+  margin-top: 3px;
+}
+.ge-locked b {
+  color: var(--d-ink);
+}
+
+/* ---------- Take me there ---------- */
+.ge-where {
+  margin: 32px 0 0 -8px;
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  border-radius: 14px;
+}
+.ge-where.is-flash {
+  animation: ge-flash 1.6s ease;
+}
+@keyframes ge-flash {
+  0%,
+  35% {
+    background: #e7f3ea;
+  }
+  100% {
+    background: transparent;
+  }
+}
+.ge-where-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 36px;
+  padding: 0 16px 0 14px;
+  border-radius: 999px;
+  background: var(--tint);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.ge-where p {
+  flex: 1;
+  min-width: 200px;
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--d-muted);
+}
+.ge-where p b {
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.ge-where-add {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 11px;
+  row-gap: 2px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  background: var(--d-card);
+  text-align: left;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--d-ink);
+  transition: background-color 0.15s ease;
+}
+.ge-where-add svg {
+  grid-row: span 2;
+  margin-top: 3px;
+}
+.ge-where-add span {
+  grid-column: 2;
+  font-size: 12.5px;
+  line-height: 18px;
+  font-weight: 500;
+  color: var(--d-muted);
+}
+.ge-where-add:hover {
+  background: #f0efed;
+}
+
+.ge-add-step {
+  width: 100%;
+  height: 52px;
+  margin-top: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  background: var(--d-card);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--d-muted);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.ge-add-step:hover {
+  background: #f0efed;
+  color: var(--d-ink);
+}
+
+/* ---------- right rail ---------- */
+.ge-rail {
+  position: sticky;
+  top: 112px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.ge-rail .dt-t {
+  margin: 0 0 10px;
+}
+.ge-rail ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ge-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--d-muted);
+}
+.ge-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: #fbf0d9;
+  font-size: 12px;
+  font-weight: 600;
+  color: #87590a;
+}
+.ge-reach li,
+.ge-ready li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 28px;
+  font-size: 13.5px;
+  line-height: 19px;
+  color: var(--d-body);
+}
+.ge-reach svg {
+  flex: 0 0 14px;
+  color: var(--d-muted);
+}
+.ge-ready li {
+  color: var(--d-muted);
+}
+.ge-ready li.is-ok {
+  color: var(--d-body);
+}
+.ge-ready-dot {
+  position: relative;
+  flex: 0 0 14px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+.ge-ready-dot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d3d0cb;
+  transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
+}
+.ge-ready-dot svg {
+  position: relative;
+}
+.is-ok .ge-ready-dot::before {
+  width: 14px;
+  height: 14px;
+  background: #3d9b52;
+}
+.ge-tips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ge-tips li {
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--d-muted);
+}
+.ge-rail-end {
+  padding-top: 4px;
+}
+.ge-discard {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--d-muted);
+}
+.ge-discard:hover {
+  color: #b8322e;
+}
+
+/* ---------- after publishing ---------- */
+.ge-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 95;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: #1f2027;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  animation: fade 0.25s ease;
+}
+.ge-toast svg {
+  color: #7fd394;
+}
+
+/* ---------- sample guides: start writing ---------- */
+.g-sample-write {
+  margin: 14px 0 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 15px;
+  border-radius: 999px;
+  background: #1f2027;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+}
+.g-sample-write:hover {
+  background: #000;
+}
+
+/* ---------- New guide window ---------- */
+.ng-select {
+  cursor: pointer;
+}
+.ng-starts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.ng-start {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 6px;
+  background: #f6f6f5;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+.ng-start:hover {
+  background: #f0efed;
+}
+.ng-start.is-on {
+  background: #e9e8e5;
+}
+.ng-start b {
+  display: block;
+  font-size: 15px;
+  line-height: 21px;
+  font-weight: 600;
+}
+.ng-start b + span {
+  display: block;
+  margin-top: 4px;
+  font-size: 13.5px;
+  line-height: 19px;
+  color: #555;
+}
+.ng-radio {
+  position: relative;
+  flex: 0 0 18px;
+  height: 18px;
+  margin-top: 2px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+.ng-start.is-on .ng-radio::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: #1f2027;
+}
+
+/* ---------- picking a spot, previewing a draft ---------- */
+html.is-picking [data-help] {
+  cursor: crosshair !important;
+}
+.ap-hl {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 96;
+  border-radius: 10px;
+  background: rgba(31, 32, 39, 0.16);
+  pointer-events: none;
+  transition: transform 0.08s ease, width 0.08s ease, height 0.08s ease;
+}
+.ap-hl-l {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #1f2027;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+.ap-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 97;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: calc(100vw - 32px);
+  padding: 8px 8px 8px 18px;
+  border-radius: 999px;
+  background: #1f2027;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  font-size: 13.5px;
+  line-height: 19px;
+  color: rgba(255, 255, 255, 0.72);
+  animation: fade 0.2s ease;
+}
+.c-app.has-panel ~ .ap-bar {
+  left: calc(50% - var(--panel-w) / 2);
+}
+.ap-bar b {
+  font-weight: 600;
+  color: #fff;
+}
+.ap-bar > svg {
+  color: #fff;
+}
+.ap-bar button {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+.ap-bar button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.ap-seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.ap-bar .ap-seg button {
+  height: 28px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+}
+.ap-bar .ap-seg button.is-on {
+  background: #fff;
+  color: #1f2027;
+}
+.ap-bar .ap-back {
+  background: #fff;
+  color: #1f2027;
+}
+.ap-bar .ap-back:hover {
+  background: #ecebe9;
+}

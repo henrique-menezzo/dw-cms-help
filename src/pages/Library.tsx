@@ -1,8 +1,10 @@
-import { faChevronRight, faHashtag } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faHashtag, faPen, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Fa } from '../components/Icon';
 import { PageBar } from '../components/Shell';
-import { GUIDES, fmtDate, guideById, guideFeature } from '../data/guides';
-import { GROUPS, groupById, type Group } from '../data/nav';
+import { allGuides, fmtDate, guideById, guideFeature } from '../data/guides';
+import { useAuthored, useAuthoredVersion } from '../data/authored';
+import { NewGuide } from '../help/NewGuide';
+import { GROUPS, featureBySlug, groupById, type Group } from '../data/nav';
 import { setParam, type Route } from '../lib/router';
 import { DocsNav } from './DocsNav';
 
@@ -45,27 +47,78 @@ function AskLine() {
 
 /** Help Library home and topic pages, laid out like Linear Docs: one white surface, docs nav, cards. */
 export function Library({ route }: { route: Route }) {
+  useAuthoredVersion();
   const cat = route.q.get('cat');
   const group = cat ? groupById(cat) : undefined;
   return (
     <div className="c-page">
-      <PageBar crumbs={group ? [{ label: 'Help Library', to: '/help' }, { label: group.name }] : [{ label: 'Help Library' }]} howto={false} />
+      <PageBar crumbs={group ? [{ label: 'Help Library', to: '/help' }, { label: group.name }] : [{ label: 'Help Library' }]} howto={false}>
+        <button className="ge-publish is-new" onClick={() => setParam('new', '1')}>
+          <Fa icon={faPlus} size={11} />
+          New guide
+        </button>
+      </PageBar>
       <div className="docs">
         <DocsNav active={group ? 'cat:' + group.id : 'home'} />
         <div className="dh">{group ? <Topic g={group} /> : <Home />}</div>
       </div>
+      {route.q.get('new') && (
+        <NewGuide
+          page={route.q.get('page')}
+          onClose={() => {
+            setParam('page', null);
+            setParam('new', null);
+          }}
+        />
+      )}
     </div>
   );
 }
 
+/** Guides someone started and hasn't published yet. Only shows when there are some. */
+function Drafts() {
+  const drafts = useAuthored((s) => s.drafts);
+  const savedAt = useAuthored((s) => s.savedAt);
+  const ids = Object.keys(drafts).sort((a, b) => (savedAt[b] ?? 0) - (savedAt[a] ?? 0));
+  if (!ids.length) return null;
+  return (
+    <section className="dh-sec">
+      <h2>Your drafts</h2>
+      <ul className="dh-rows">
+        {ids.map((id) => {
+          const d = drafts[id];
+          const f = featureBySlug(id);
+          return (
+            <li key={id}>
+              <a href={`#/help/write/${id}`}>
+                <span className="dh-row-t">
+                  <b>{d.title.trim() || 'Untitled guide'}</b>
+                  <span>
+                    {f?.name} · {d.sections.length} {d.sections.length === 1 ? 'step' : 'steps'}
+                  </span>
+                </span>
+                <span className="ge-chip">Draft</span>
+                <Fa icon={faPen} size={11} className="dh-row-chev" />
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 function Home() {
-  const recent = [...GUIDES].sort((a, b) => b.updated.localeCompare(a.updated)).slice(0, 4);
+  const recent = allGuides()
+    .sort((a, b) => b.updated.localeCompare(a.updated))
+    .slice(0, 4);
   return (
     <>
       <header className="dh-head">
         <h1>Help Library</h1>
         <p>How-to guides for every part of the CMS. The question mark at the top of each page opens the same guides.</p>
       </header>
+      <Drafts />
       <section className="dh-sec">
         <h2>Popular</h2>
         <div className="dh-cards">

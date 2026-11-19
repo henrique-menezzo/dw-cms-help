@@ -158,6 +158,12 @@ export function Blocks({
             return shotsAs === 'none' ? null : <Shots key={i} shots={b.shots} compact={shotsAs === 'thumbs'} />;
           case 'specs':
             return <Specs key={i} />;
+          case 'video':
+            return b.src ? (
+              <figure key={i} className="g-video">
+                <video src={b.src} controls preload="metadata" />
+              </figure>
+            ) : null;
           case 'more':
             return (
               <details key={i} className="g-more">

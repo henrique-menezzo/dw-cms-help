@@ -1,4 +1,5 @@
 import { FEATURES, featureBySlug } from './nav';
+import { useAuthored } from './authored';
 import slotLogo from '../assets/cms/slot-logo.webp';
 import slotPoster from '../assets/cms/slot-poster.webp';
 import slotThumb from '../assets/cms/slot-thumbnail.webp';
@@ -24,12 +25,13 @@ export type Block =
   | { t: 'callout'; tone: 'tip' | 'warn' | 'note'; text: string; emoji?: string }
   | { t: 'shots'; shots: Shot[] }
   | { t: 'specs' }
-  | { t: 'more'; title: string; blocks: Block[] };
+  | { t: 'more'; title: string; blocks: Block[] }
+  | { t: 'video'; src: string; name: string };
 
 /** Where a step happens in the CMS. `to` is a hash path, `target` a data-help anchor on that page. */
 export type Where = { to: string; target: string };
 
-export type Section = { id: string; title: string; blocks: Block[]; where?: Where };
+export type Section = { id: string; title: string; blocks: Block[]; where?: Where; /** editor placeholder */ hint?: string };
 
 export type Guide = {
   id: string; // feature slug
@@ -396,7 +398,14 @@ export const GUIDES: Guide[] = FEATURES.map((f, i) => {
   };
 });
 
-export const guideById = (id: string) => GUIDES.find((g) => g.id === id);
+/** Built-in guides, then what was written in the editor: a published guide replaces its sample,
+ *  and while a draft is being previewed, the draft stands in for it everywhere. */
+export const guideById = (id: string): Guide | undefined => {
+  const a = useAuthored.getState();
+  if (a.preview === id && a.drafts[id]) return a.drafts[id];
+  return a.published[id] ?? GUIDES.find((g) => g.id === id);
+};
+export const allGuides = (): Guide[] => GUIDES.map((g) => guideById(g.id)!);
 export const sectionIndex = (g: Guide, id: string | null) => Math.max(0, g.sections.findIndex((s) => s.id === id));
 export const guideFeature = (g: Guide) => featureBySlug(g.id)!;
 
@@ -422,6 +431,8 @@ export function blockText(b: Block): string {
       return IMAGE_SPECS.map((s) => `${s.name} ${s.ratio} ${s.say}`).join(' ');
     case 'more':
       return `${b.title} ${b.blocks.map(blockText).join(' ')}`;
+    case 'video':
+      return b.name;
   }
 }
 
@@ -431,7 +442,7 @@ export function search(q: string): Hit[] {
   const tokens = q.toLowerCase().split(/\s+/).filter((t) => t.length > 1);
   if (!tokens.length) return [];
   const hits: Hit[] = [];
-  for (const g of GUIDES) {
+  for (const g of allGuides()) {
     const f = guideFeature(g);
     const head = `${g.title} ${f.name} ${g.intro}`.toLowerCase();
     if (tokens.every((t) => head.includes(t))) {
