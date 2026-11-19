@@ -109,7 +109,10 @@ export function readImage(file: File | Blob, alt = ''): Promise<Shot> {
       const retina = img.naturalWidth >= 1600;
       resolve({ src: c.toDataURL('image/webp', 0.85), alt, w: retina ? w : w * 2, h: retina ? h : h * 2 });
     };
-    img.onerror = reject;
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('not an image'));
+    };
     img.src = url;
   });
 }

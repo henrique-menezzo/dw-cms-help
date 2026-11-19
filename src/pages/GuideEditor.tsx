@@ -683,9 +683,12 @@ function Drop({ accept, onFiles, icon, title, sub, compact }: { accept: string; 
 }
 
 function ShotsEditor({ shots, onChange }: { shots: Shot[]; onChange: (s: Shot[]) => void }) {
+  const [bad, setBad] = useState(false);
   const add = async (files: File[]) => {
-    const read = await Promise.all(files.map((f) => readImage(f)));
-    onChange([...shots, ...read]);
+    const read = await Promise.allSettled(files.map((f) => readImage(f)));
+    const ok = read.flatMap((r) => (r.status === 'fulfilled' ? [r.value] : []));
+    setBad(ok.length < read.length);
+    if (ok.length) onChange([...shots, ...ok]);
   };
   return (
     <div className="ge-shots">
@@ -703,6 +706,7 @@ function ShotsEditor({ shots, onChange }: { shots: Shot[]; onChange: (s: Shot[])
       ) : (
         <Drop compact accept="image/*" onFiles={add} icon={faPlus} title="Add another screenshot" sub="or drop one here" />
       )}
+      {bad && <p className="ge-err">That file couldn’t be opened as an image. A PNG or JPG works.</p>}
     </div>
   );
 }

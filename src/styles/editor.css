@@ -595,6 +595,12 @@
 .ge-shot-img:hover .ge-ib {
   opacity: 1;
 }
+.ge-err {
+  margin-top: -8px;
+  font-size: 13px;
+  line-height: 19px;
+  color: #b8322e;
+}
 .ge-cap {
   margin-top: 10px;
   font-size: 13px;
