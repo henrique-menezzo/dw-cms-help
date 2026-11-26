@@ -1,7 +1,7 @@
 import { faChevronRight, faHashtag, faPen, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Fa } from '../components/Icon';
 import { PageBar } from '../components/Shell';
-import { allGuides, fmtDate, guideById, guideFeature } from '../data/guides';
+import { allGuides, fmtDate, guideById, guideFeature, guideSummary } from '../data/guides';
 import { useAuthored, useAuthoredVersion } from '../data/authored';
 import { NewGuide } from '../help/NewGuide';
 import { GROUPS, featureBySlug, groupById, type Group } from '../data/nav';
@@ -94,7 +94,7 @@ function Drafts() {
                 <span className="dh-row-t">
                   <b>{d.title.trim() || 'Untitled guide'}</b>
                   <span>
-                    {f?.name} · {d.sections.length} {d.sections.length === 1 ? 'step' : 'steps'}
+                    {f?.name} · {d.sections.length ? `${d.sections.length} ${d.sections.length === 1 ? 'step' : 'steps'}` : 'Text only'}
                   </span>
                 </span>
                 <span className="ge-chip">Draft</span>
@@ -132,7 +132,7 @@ function Home() {
                 </span>
                 <span className="dc-body">
                   <b>{guide.title}</b>
-                  <span>{guide.sample ? `${guideFeature(guide).name} · ${g.name}` : guide.intro}</span>
+                  <span>{guide.sample ? `${guideFeature(guide).name} · ${g.name}` : guideSummary(guide)}</span>
                 </span>
               </a>
             );

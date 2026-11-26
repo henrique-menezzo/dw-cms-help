@@ -38,6 +38,7 @@ export function GuidePage({ route, id }: { route: Route; id: string }) {
       let cur = 'top';
       document.querySelectorAll<HTMLElement>('.da [data-sec]').forEach((el) => {
         if (el.getBoundingClientRect().top < 160) cur = el.dataset.sec!.split('/')[0];
+        if (cur === 'body') cur = 'top';
       });
       // the last part is too short to reach the reading line: at the bottom of the page, you're on it
       const atEnd = innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
@@ -83,17 +84,17 @@ export function GuidePage({ route, id }: { route: Route; id: string }) {
           {copied ? 'Copied' : 'Copy link'}
         </button>
       </PageBar>
-      <div className={'docs is-article' + (guide.sample ? ' is-sample' : '')}>
+      <div className={'docs is-article' + (guide.sample || !guide.sections.length ? ' is-sample' : '')}>
         <DocsNav active={id} />
 
         <article className="da">
           <h1>{guide.title}</h1>
-          <p className="da-lead">{guide.intro}</p>
+          {guide.intro.trim() && <p className="da-lead">{guide.intro}</p>}
           <p className="da-meta">
             <span>Updated {fmtDate(guide.updated)}</span>
             {!guide.sample && (
               <>
-                <span>{guide.sections.length} steps</span>
+                {guide.sections.length > 0 && <span>{guide.sections.length} steps</span>}
                 <span>{readMinutes(guide)} min read</span>
               </>
             )}
@@ -118,7 +119,7 @@ export function GuidePage({ route, id }: { route: Route; id: string }) {
         </article>
         {justPublished && <Toast>Live now. The question mark on {f.name} opens this guide.</Toast>}
 
-        {!guide.sample && (
+        {!guide.sample && guide.sections.length > 0 && (
           <aside className="dt" aria-label="On this page">
             <p className="dt-t">On this page</p>
             <ul>

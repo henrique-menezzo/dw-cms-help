@@ -924,8 +924,8 @@
 }
 .ng-starts {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 .ng-start {
   display: flex;
@@ -1063,4 +1063,157 @@ html.is-picking [data-help] {
 }
 .ap-bar .ap-back:hover {
   background: #ecebe9;
+}
+
+/* ================= Paste a doc ================= */
+.ge-bodyed {
+  margin-top: 32px;
+  scroll-margin-top: 120px;
+}
+.ge-paste {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 56px 32px 40px;
+  border-radius: 14px;
+  background: var(--d-card);
+  text-align: center;
+  color: var(--d-muted);
+  outline: 0;
+  cursor: text;
+  transition: background-color 0.15s ease;
+}
+.ge-paste:focus,
+.ge-paste.is-over {
+  background: #f1f0ee;
+}
+.ge-paste > svg {
+  margin-bottom: 8px;
+  color: var(--d-ink);
+}
+.ge-paste > b {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.ge-paste > span {
+  max-width: 420px;
+  font-size: 13.5px;
+  line-height: 20px;
+}
+.ge-paste .ge-paste-alt {
+  margin-top: 18px;
+  display: flex;
+  gap: 4px;
+}
+.ge-paste-alt button {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.ge-paste-alt button:hover {
+  background: #fff;
+}
+.ge-paste .ge-err {
+  margin-top: 12px;
+}
+
+.ge-split {
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 14px 18px;
+  border-radius: 12px;
+  background: var(--d-card);
+}
+.ge-split > svg {
+  flex: none;
+  color: var(--d-ink);
+}
+.ge-split p {
+  flex: 1;
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--d-muted);
+}
+.ge-split p b {
+  font-weight: 600;
+  color: var(--d-ink);
+}
+.ge-split button {
+  flex: none;
+  height: 34px;
+  padding: 0 15px;
+  border-radius: 999px;
+  background: #1f2027;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+.ge-split button:hover {
+  background: #000;
+}
+.ge-split.is-quiet {
+  padding: 0;
+  background: none;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--d-muted);
+}
+.ge-split.is-quiet svg {
+  color: var(--d-muted);
+}
+.ge-undo {
+  margin-top: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 999px;
+  background: #e9f4ec;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2f6b3c;
+  animation: fade 0.2s ease;
+}
+.ge-undo button {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--d-ink);
+}
+
+/* a guide that's text (all of it, or above the steps), in the library and the side panel */
+.da .ga-body {
+  margin-top: 40px;
+}
+.da .ga-body.is-only {
+  margin-top: 32px;
+}
+.ga-video + .ga-body {
+  margin-top: 48px;
+}
+.pg-body {
+  padding: 4px 0 20px;
+}
+.pg-body + .acc {
+  margin-top: 4px;
+}
+
+/* the guide's own subheading rule sets margins; in the editor the text keeps its edge in line with the paragraphs */
+.da.ge-doc .ge-text.g-h,
+.da.ge-doc .ge-text.g-p {
+  margin: -4px -8px;
+  letter-spacing: inherit;
+  text-transform: none;
 }

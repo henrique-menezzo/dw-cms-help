@@ -166,7 +166,7 @@ function PanelTopic({ g }: { g: Group }) {
               <button className="ph-row is-plain" onClick={() => openHelp(f.slug, null)}>
                 <span className="ph-row-t">
                   <b>{guide.title}</b>
-                  <span>{guide.sample ? f.name : `${f.name} · ${guide.sections.length} steps · Video`}</span>
+                  <span>{guide.sample ? f.name : guide.sections.length ? `${f.name} · ${guide.sections.length} steps · Video` : `${f.name} · ${readMinutes(guide)} min read`}</span>
                 </span>
                 <Fa icon={faChevronRight} size={10} className="ph-chev" />
               </button>
@@ -211,7 +211,7 @@ function PanelGuide({ guide, scroller }: { guide: Guide; scroller: React.RefObje
           {g.name} · {f.name}
         </span>
         <h2>{guide.title}</h2>
-        {!guide.sample && <p className="pg-meta">{guide.sections.length} steps · {readMinutes(guide)} min read</p>}
+        {!guide.sample && <p className="pg-meta">{guide.sections.length ? `${guide.sections.length} steps · ` : ''}{readMinutes(guide)} min read</p>}
       </div>
       {guide.sample ? (
         <SampleNote guide={guide} onExample={() => openHelp('movies', null)}>
@@ -221,6 +221,12 @@ function PanelGuide({ guide, scroller }: { guide: Guide; scroller: React.RefObje
         </SampleNote>
       ) : (
         <>
+          {guide.body && guide.body.length > 0 && (
+            <div className="pg-body">
+              <Blocks blocks={guide.body} compact shotsAs="thumbs" />
+            </div>
+          )}
+          {guide.sections.length > 0 && (
           <ol className="acc">
             {guide.sections.map((s, i) => {
               const open = help.section === s.id;
@@ -250,6 +256,7 @@ function PanelGuide({ guide, scroller }: { guide: Guide; scroller: React.RefObje
               );
             })}
           </ol>
+          )}
           <div className="pg-end">
             <Feedback compact />
           </div>

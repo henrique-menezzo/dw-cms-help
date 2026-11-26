@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import { CmsModal, Hint } from '../components/CmsModal';
 import { useAuthored } from '../data/authored';
-import { starterGuide } from '../data/authoring';
+import { starterGuide, type Start } from '../data/authoring';
 import { guideById } from '../data/guides';
 import { GROUPS, featureBySlug } from '../data/nav';
 import { go } from '../lib/router';
+
+const STARTS: { key: Start; title: string; sub: string }[] = [
+  { key: 'outline', title: 'A basic outline', sub: 'Four steps to fill in: open the page, add one, fill in the details, publish.' },
+  { key: 'blank', title: 'A blank guide', sub: 'One empty step. Add the rest as you go.' },
+  { key: 'paste', title: 'Paste a doc', sub: 'Already written somewhere? Paste it as it is. Steps are optional.' },
+];
 
 /** Same window as the CMS's own Create Movie: pick the page, name the guide, choose how to start. */
 export function NewGuide({ page, onClose }: { page?: string | null; onClose: () => void }) {
@@ -13,7 +19,7 @@ export function NewGuide({ page, onClose }: { page?: string | null; onClose: () 
   const [slug, setSlug] = useState(page && featureBySlug(page) ? page : '');
   const [title, setTitle] = useState('');
   const [touched, setTouched] = useState(false);
-  const [outline, setOutline] = useState(true);
+  const [start, setStart] = useState<Start>('outline');
   const f = slug ? featureBySlug(slug) : undefined;
   const existing = slug ? guideById(slug) : undefined;
   // the library already names every page's guide ("Build a Carousel"), so start from that
@@ -23,7 +29,7 @@ export function NewGuide({ page, onClose }: { page?: string | null; onClose: () 
 
   const create = () => {
     if (!f) return;
-    if (!hasGuide && !hasDraft) saveDraft(starterGuide(f, shownTitle.trim(), outline));
+    if (!hasGuide && !hasDraft) saveDraft(starterGuide(f, shownTitle.trim(), start));
     go(`/help/write/${f.slug}`);
   };
 
@@ -32,7 +38,7 @@ export function NewGuide({ page, onClose }: { page?: string | null; onClose: () 
       title="New Guide"
       sub="Pick the CMS page this guide is for. The question mark on that page will open it."
       onClose={onClose}
-      width={720}
+      width={780}
       foot={
         <>
           <button className="cb is-outline" onClick={onClose}>
@@ -97,20 +103,15 @@ export function NewGuide({ page, onClose }: { page?: string | null; onClose: () 
           <div className="f-field">
             <span className="f-label">Start with</span>
             <div className="ng-starts" role="radiogroup">
-              <button role="radio" aria-checked={outline} className={'ng-start' + (outline ? ' is-on' : '')} onClick={() => setOutline(true)}>
-                <span className="ng-radio" aria-hidden="true" />
-                <span>
-                  <b>A basic outline</b>
-                  <span>Four steps to fill in: open the page, add a new one, fill in the details, publish.</span>
-                </span>
-              </button>
-              <button role="radio" aria-checked={!outline} className={'ng-start' + (!outline ? ' is-on' : '')} onClick={() => setOutline(false)}>
-                <span className="ng-radio" aria-hidden="true" />
-                <span>
-                  <b>A blank guide</b>
-                  <span>One empty step. Add the rest as you go.</span>
-                </span>
-              </button>
+              {STARTS.map((o) => (
+                <button key={o.key} role="radio" aria-checked={start === o.key} className={'ng-start' + (start === o.key ? ' is-on' : '')} onClick={() => setStart(o.key)}>
+                  <span className="ng-radio" aria-hidden="true" />
+                  <span>
+                    <b>{o.title}</b>
+                    <span>{o.sub}</span>
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
         </>

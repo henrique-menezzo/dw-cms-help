@@ -9,7 +9,7 @@ import { Blocks, WhereButton, guideFrames } from './GuideBlocks';
 import { Walkthrough } from './Walkthrough';
 
 export const readMinutes = (g: Guide) =>
-  Math.max(1, Math.round(g.sections.flatMap((s) => s.blocks.map(blockText)).join(' ').split(/\s+/).length / 200));
+  Math.max(1, Math.round([...(g.body ?? []), ...g.sections.flatMap((s) => s.blocks)].map(blockText).join(' ').split(/\s+/).length / 200));
 
 export function TopicIcon({ g, size = 44, icon }: { g: Group; size?: number; icon?: IconDefinition }) {
   return (
@@ -101,6 +101,11 @@ export function GuideArticle({ guide, idPrefix, here }: { guide: Guide; variant?
       {frames.length > 0 && (
         <div className="ga-video">
           <Walkthrough frames={frames} chapters={chapters} size="md" label="Watch the whole thing" />
+        </div>
+      )}
+      {guide.body && guide.body.length > 0 && (
+        <div className={'ga-body' + (guide.sections.length ? '' : ' is-only')}>
+          <Blocks blocks={guide.body} anchor={`${idPrefix}-body`} secKey="body" />
         </div>
       )}
       {guide.sections.map((s, i) => (

@@ -18,7 +18,7 @@ const shot = (n: number, alt: string): Shot => ({ src: files[`../assets/guides/m
 export type Shot = { src: string; alt: string; w?: number; h?: number };
 export type Block =
   | { t: 'p'; text: string }
-  | { t: 'h'; text: string }
+  | { t: 'h'; text: string; /** from a pasted doc: 1 for its title */ level?: number }
   | { t: 'steps'; items: string[] }
   | { t: 'list'; items: string[] }
   | { t: 'defs'; items: [string, string][] }
@@ -41,6 +41,8 @@ export type Guide = {
   updated: string; // ISO date
   sample: boolean;
   sections: Section[];
+  /** a guide pasted from a doc: text that sits above the steps, or the whole guide when it has none */
+  body?: Block[];
   recap?: string[];
   outro?: { emoji: string; title: string; text: string };
   related: string[];
@@ -406,6 +408,14 @@ export const guideById = (id: string): Guide | undefined => {
   return a.published[id] ?? GUIDES.find((g) => g.id === id);
 };
 export const allGuides = (): Guide[] => GUIDES.map((g) => guideById(g.id)!);
+
+/** The intro, or for a pasted guide without one, its first sentences. */
+export function guideSummary(g: Guide): string {
+  if (g.intro.trim()) return g.intro;
+  const first = [...(g.body ?? []), ...g.sections.flatMap((s) => s.blocks)].find((b) => b.t === 'p' && b.text.trim());
+  const t = first && first.t === 'p' ? first.text.replace(/\*\*/g, '') : '';
+  return t.length > 140 ? t.slice(0, t.lastIndexOf(' ', 136)) + '…' : t;
+}
 export const sectionIndex = (g: Guide, id: string | null) => Math.max(0, g.sections.findIndex((s) => s.id === id));
 export const guideFeature = (g: Guide) => featureBySlug(g.id)!;
 
@@ -444,9 +454,9 @@ export function search(q: string): Hit[] {
   const hits: Hit[] = [];
   for (const g of allGuides()) {
     const f = guideFeature(g);
-    const head = `${g.title} ${f.name} ${g.intro}`.toLowerCase();
+    const head = `${g.title} ${f.name} ${g.intro} ${(g.body ?? []).map(blockText).join(' ')}`.toLowerCase();
     if (tokens.every((t) => head.includes(t))) {
-      hits.push({ guide: g, snippet: g.intro, score: 3 + (g.title.toLowerCase().includes(tokens[0]) ? 1 : 0) });
+      hits.push({ guide: g, snippet: guideSummary(g), score: 3 + (g.title.toLowerCase().includes(tokens[0]) ? 1 : 0) });
     }
     for (const s of g.sections) {
       const body = s.blocks.map(blockText).join(' ');

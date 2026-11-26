@@ -5,7 +5,8 @@ import { parse } from '../lib/router';
 export const uid = () => 'step-' + Math.random().toString(36).slice(2, 7);
 
 /** A new guide. The outline gives a non-writer the usual shape of a CMS task to fill in. */
-export function starterGuide(f: Feature, title: string, outline: boolean): Guide {
+export type Start = 'outline' | 'blank' | 'paste';
+export function starterGuide(f: Feature, title: string, start: Start): Guide {
   const g = groupById(f.group)!;
   const step = (t: string, hint: string): Section => ({ id: uid(), title: t, blocks: [{ t: 'p', text: '' }], hint });
   return {
@@ -15,7 +16,11 @@ export function starterGuide(f: Feature, title: string, outline: boolean): Guide
     updated: new Date().toISOString().slice(0, 10),
     sample: false,
     related: [],
-    sections: outline
+    body: start === 'paste' ? [] : undefined,
+    sections:
+      start === 'paste'
+        ? []
+        : start === 'outline'
       ? [
           step(`Open ${f.name}`, `Where to find it. For example: in the sidebar, open ${g.name} and click ${f.name}.`),
           step('Add a new one', 'What to click to start, and what opens.'),
@@ -82,6 +87,12 @@ export const stepHasContent = (s: Section) => s.blocks.some(filled);
 
 /** What has to be true before a guide can go live. */
 export function readiness(g: Guide) {
+  // a pasted doc can go live as it is: a title and some text
+  if (!g.sections.length)
+    return [
+      { label: 'A title', ok: !!g.title.trim() },
+      { label: 'Some text', ok: (g.body ?? []).some(filled) },
+    ];
   return [
     { label: 'A title', ok: !!g.title.trim() },
     { label: 'A one-line description', ok: !!g.intro.trim() },

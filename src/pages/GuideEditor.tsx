@@ -6,6 +6,7 @@ import {
   faBookOpen,
   faCheck,
   faChevronDown,
+  faCircleInfo,
   faCircleQuestion,
   faFilm,
   faGripVertical,
@@ -15,6 +16,7 @@ import {
   faListUl,
   faLocationCrosshairs,
   faMagnifyingGlass,
+  faPaste,
   faPlus,
   faTableList,
   faTrashCan,
@@ -28,7 +30,8 @@ import { Fa } from '../components/Icon';
 import { PageBar } from '../components/Shell';
 import { useAuthored, useAuthoredVersion } from '../data/authored';
 import { pageLabel, readImage, readiness, spotLabel, uid } from '../data/authoring';
-import { guideById, type Block, type Guide, type Section, type Shot } from '../data/guides';
+import { blocksFromClipboard, blocksFromHtml, blocksFromText, headingCount, splitIntoSteps, takeTitle } from '../data/importDoc';
+import { GUIDES, guideById, type Block, type Guide, type Section, type Shot } from '../data/guides';
 import { featureBySlug, featurePath, groupById } from '../data/nav';
 import { go, type Route } from '../lib/router';
 import { readMinutes } from '../help/Article';
@@ -57,6 +60,7 @@ export function GuideEditor({ route, id }: { route: Route; id: string }) {
   const [flash, setFlash] = useState<string | null>(null);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const leaving = useRef(false);
+  const [undo, setUndo] = useState<Guide | null>(null);
 
   // Editing a guide that's already live starts a draft from it; anything else goes through New guide.
   useEffect(() => {
@@ -122,6 +126,32 @@ export function GuideEditor({ route, id }: { route: Route; id: string }) {
   const ready = checks.every((c) => c.ok);
   const live = published ?? (guideById(id)?.sample === false ? guideById(id) : undefined);
   const { frames, chapters } = guideFrames(draft);
+  // a pasted doc: text that stands on its own, with steps only if the writer wants them
+  const pasted = draft.body !== undefined;
+  const body = draft.body ?? [];
+  const setBody = (b: Block[]) => update((d) => ({ ...d, body: b }));
+  // the doc's own title replaces the suggested one, never one the writer typed
+  const onPasted = (b: Block[]) => {
+    const t = takeTitle(b);
+    const suggested = ['', `Manage ${f.name}`, GUIDE_TITLE(id)].includes(draft.title.trim());
+    update((d) => ({ ...d, title: t.title && suggested ? t.title : d.title, body: t.title && suggested ? t.blocks : b }));
+  };
+  const split = () => {
+    const before = useAuthored.getState().drafts[id];
+    const parts = splitIntoSteps(body);
+    let intro = draft.intro;
+    let rest = parts.before;
+    // one short paragraph above the first heading is the guide's intro
+    const lone = rest.filter((b) => b.t === 'p' && b.text.trim());
+    if (!intro.trim() && lone.length === 1 && rest.length <= 2 && lone[0].t === 'p') {
+      intro = lone[0].text.replace(/\*\*/g, '');
+      rest = rest.filter((b) => b !== lone[0]);
+    }
+    update((d) => ({ ...d, intro, body: rest, sections: [...parts.sections, ...d.sections] }));
+    setUndo(before);
+    setTimeout(() => setUndo(null), 12000);
+    setTimeout(() => document.getElementById('e-' + parts.sections[0]?.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 60);
+  };
 
   const pick = (s: Section) => {
     setPicking({ guide: id, section: s.id });
@@ -159,6 +189,11 @@ export function GuideEditor({ route, id }: { route: Route; id: string }) {
           <button className={'ge-o' + (active === 'top' ? ' is-on' : '')} onClick={() => jump('top')}>
             <span className="ge-o-t">Title and intro</span>
           </button>
+          {pasted && body.length > 0 && (
+            <button className={'ge-o' + (active === 'body' ? ' is-on' : '')} onClick={() => jump('body')}>
+              <span className="ge-o-t">{draft.sections.length ? 'Text above the steps' : 'Text'}</span>
+            </button>
+          )}
           <Outline sections={draft.sections} active={active} onJump={jump} onMove={moveSec} />
           <button className="ge-o is-add" onClick={addSec}>
             <Fa icon={faPlus} size={11} />
@@ -173,13 +208,30 @@ export function GuideEditor({ route, id }: { route: Route; id: string }) {
               className="ge-lead"
               value={draft.intro}
               onChange={(v) => update((d) => ({ ...d, intro: v }))}
-              placeholder={`One line on what this helps people do. For example: Everything you need to add ${f.name.toLowerCase()} and get it live.`}
+              placeholder={
+                pasted && !draft.sections.length
+                  ? 'Optional. One line on what this helps people do.'
+                  : `One line on what this helps people do. For example: Everything you need to add ${f.name.toLowerCase()} and get it live.`
+              }
             />
             <p className="da-meta">
-              <span>{draft.sections.length === 1 ? '1 step' : `${draft.sections.length} steps`}</span>
+              {(draft.sections.length > 0 || !pasted) && <span>{draft.sections.length === 1 ? '1 step' : `${draft.sections.length} steps`}</span>}
               <span>{readMinutes(draft)} min read</span>
             </p>
-            {frames.length > 0 ? (
+            {undo && (
+              <p className="ge-undo" role="status">
+                Split into {draft.sections.length} steps.
+                <button
+                  onClick={() => {
+                    saveDraft(undo);
+                    setUndo(null);
+                  }}
+                >
+                  Undo
+                </button>
+              </p>
+            )}
+            {pasted && !draft.sections.length && !frames.length ? null : frames.length > 0 ? (
               <div className="ge-walk">
                 <Walkthrough frames={frames} chapters={chapters} size="md" label="Watch the whole thing" />
                 <p className="ge-note">Made from the screenshots in your steps. It updates as you add them.</p>
@@ -194,6 +246,19 @@ export function GuideEditor({ route, id }: { route: Route; id: string }) {
               </div>
             )}
           </div>
+
+          {pasted && (body.length > 0 || !draft.sections.length) && (
+            <section className="ge-bodyed" id="e-body" data-esec="body">
+              {body.length === 0 && !draft.sections.length ? (
+                <PasteDoc onBlocks={onPasted} onType={() => setBody([{ t: 'p', text: '' }])} />
+              ) : (
+                <>
+                  {!draft.sections.length && <SplitHint heads={headingCount(body)} onSplit={split} />}
+                  <BlockList blocks={body} onChange={setBody} />
+                </>
+              )}
+            </section>
+          )}
 
           {draft.sections.map((s, i) => (
             <StepEditor
@@ -289,6 +354,9 @@ export function GuideEditor({ route, id }: { route: Route; id: string }) {
     </div>
   );
 }
+
+/** the title the library gives a page that has no guide yet ("Build a Carousel") */
+const GUIDE_TITLE = (id: string) => GUIDES.find((g) => g.id === id)?.title ?? '';
 
 function SavedAt({ at }: { at?: number }) {
   const [, tick] = useState(0);
@@ -459,6 +527,10 @@ function BlockList({ blocks, onChange, hint, nested }: { blocks: Block[]; onChan
               setFresh(i + 1);
               onChange([...blocks.slice(0, i + 1), { t: 'p', text: '' }, ...blocks.slice(i + 1)]);
             }}
+            onPasteBlocks={(nb) => {
+              const empty = b.t === 'p' && !b.text.trim();
+              onChange([...blocks.slice(0, empty ? i : i + 1), ...nb, ...blocks.slice(i + 1)]);
+            }}
           />
           <div className="ge-b-tools">
             <IconBtn icon={faArrowUp} label="Move up" disabled={i === 0} onClick={() => move(i, -1)} />
@@ -526,7 +598,21 @@ function AddBlock({ onAdd, nested }: { onAdd: (b: Block) => void; nested?: boole
   );
 }
 
-function BlockEditor({ b, onChange, autoFocus, hint, onEnter }: { b: Block; onChange: (b: Block) => void; autoFocus?: boolean; hint?: string; onEnter?: () => void }) {
+function BlockEditor({
+  b,
+  onChange,
+  autoFocus,
+  hint,
+  onEnter,
+  onPasteBlocks,
+}: {
+  b: Block;
+  onChange: (b: Block) => void;
+  autoFocus?: boolean;
+  hint?: string;
+  onEnter?: () => void;
+  onPasteBlocks?: (b: Block[]) => void;
+}) {
   switch (b.t) {
     case 'p':
       return (
@@ -536,6 +622,7 @@ function BlockEditor({ b, onChange, autoFocus, hint, onEnter }: { b: Block; onCh
           onChange={(text) => onChange({ ...b, text })}
           placeholder={hint ?? 'Write what to do here.'}
           autoFocus={autoFocus}
+          onPasteBlocks={onPasteBlocks}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey && onEnter) {
               e.preventDefault();
@@ -846,6 +933,7 @@ function RichText({
   autoFocus,
   onKeyDown,
   inputRef,
+  onPasteBlocks,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -854,6 +942,8 @@ function RichText({
   autoFocus?: boolean;
   onKeyDown?: (e: ReactKeyboardEvent<HTMLElement>) => void;
   inputRef?: (el: HTMLElement | null) => void;
+  /** a whole doc (or a screenshot) pasted into a paragraph turns into blocks */
+  onPasteBlocks?: (b: Block[]) => void;
 }) {
   const ref = useRef<HTMLDivElement | null>(null);
   const last = useRef<string | null>(null);
@@ -900,8 +990,100 @@ function RichText({
       }}
       onPaste={(e) => {
         e.preventDefault();
+        if (onPasteBlocks) {
+          const blocks = blocksFromClipboard(e.clipboardData);
+          if (blocks.length > 1 || (blocks.length === 1 && blocks[0].t !== 'p')) return onPasteBlocks(blocks);
+          const imgs = [...e.clipboardData.files].filter((f) => f.type.startsWith('image/'));
+          if (!blocks.length && imgs.length) {
+            Promise.allSettled(imgs.map((f) => readImage(f))).then((r) => {
+              const shots = r.flatMap((x) => (x.status === 'fulfilled' ? [x.value] : []));
+              if (shots.length) onPasteBlocks([{ t: 'shots', shots }]);
+            });
+            return;
+          }
+        }
         document.execCommand('insertText', false, e.clipboardData.getData('text/plain').replace(/\s*\n\s*/g, ' '));
       }}
     />
+  );
+}
+
+/* ---------- a doc that's already written ---------- */
+function PasteDoc({ onBlocks, onType }: { onBlocks: (b: Block[]) => void; onType: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLInputElement>(null);
+  const [err, setErr] = useState(false);
+  const [over, setOver] = useState(false);
+  useEffect(() => ref.current?.focus({ preventScroll: true }), []);
+  const fromFiles = async (files: File[]) => {
+    const out: Block[] = [];
+    for (const f of files) {
+      if (f.type.startsWith('image/')) {
+        try {
+          out.push({ t: 'shots', shots: [await readImage(f)] });
+        } catch {
+          /* not an image after all */
+        }
+      } else if (/\.html?$/i.test(f.name) || f.type === 'text/html') out.push(...blocksFromHtml(await f.text()));
+      else if (/\.(md|markdown|txt)$/i.test(f.name) || f.type.startsWith('text/')) out.push(...blocksFromText(await f.text()));
+    }
+    setErr(!out.length);
+    if (out.length) onBlocks(out);
+  };
+  return (
+    <div
+      ref={ref}
+      className={'ge-paste' + (over ? ' is-over' : '')}
+      tabIndex={0}
+      role="textbox"
+      aria-label="Paste your doc here"
+      onMouseEnter={() => ref.current?.focus({ preventScroll: true })}
+      onPaste={(e) => {
+        e.preventDefault();
+        const blocks = blocksFromClipboard(e.clipboardData);
+        if (blocks.length) onBlocks(blocks);
+        else fromFiles([...e.clipboardData.files]);
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setOver(true);
+      }}
+      onDragLeave={() => setOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setOver(false);
+        fromFiles([...e.dataTransfer.files]);
+      }}
+    >
+      <Fa icon={faPaste} size={20} />
+      <b>Paste your doc here</b>
+      <span>Copy it from Google Docs, Word, Notion or Confluence and press ⌘V. Headings, lists, bold and images come along.</span>
+      <span className="ge-paste-alt">
+        <button onClick={() => input.current?.click()}>Choose a .txt or .md file</button>
+        <button onClick={onType}>Start typing instead</button>
+      </span>
+      {err && <p className="ge-err">That file couldn’t be read. Copy its text and paste it here instead.</p>}
+      <input ref={input} type="file" accept=".txt,.md,.markdown,.html,text/plain,text/markdown,text/html" hidden onChange={(e) => fromFiles([...(e.target.files ?? [])])} />
+    </div>
+  );
+}
+
+/** A pasted doc can go live as one page. If it has headings, those can become steps in one click. */
+function SplitHint({ heads, onSplit }: { heads: number; onSplit: () => void }) {
+  if (heads >= 2)
+    return (
+      <div className="ge-split">
+        <Fa icon={faListOl} size={14} />
+        <p>
+          <b>Your doc has {heads} headings.</b> Make each one a step to get Take me there buttons, steps in the side panel and a walkthrough video.
+        </p>
+        <button onClick={onSplit}>Split into steps</button>
+      </div>
+    );
+  return (
+    <p className="ge-split is-quiet">
+      <Fa icon={faCircleInfo} size={13} />
+      This goes live as one page of text. To split it into steps later, give each step a heading.
+    </p>
   );
 }
